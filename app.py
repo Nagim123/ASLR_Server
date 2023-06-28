@@ -30,4 +30,6 @@ def video_frame_callback(frame):
     # lmList, bboxInfo = pose_detector.findPosition(img, bboxWithHands=False)
     return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-webrtc_streamer(key="sample", video_frame_callback=video_frame_callback)
+webrtc_streamer(key="sample", video_frame_callback=video_frame_callback, rtc_configuration={  # Add this config
+        "iceServers": [{"urls": ["stun:iphone-stun.strato-iphone.de:3478"]}]
+    })
