@@ -1,9 +1,7 @@
 from streamlit_webrtc import webrtc_streamer
+from sign_detector import Recognizer
 import av
-import time
-import cv2
-from cvzone.HandTrackingModule import HandDetector
-from cvzone.PoseModule import PoseDetector
+
 
 import streamlit as st
 
@@ -19,17 +17,12 @@ st.set_page_config(
 
 st.title("American sign language recognition app! ✌️")
 
-hands_detector = HandDetector()
+recognizer = Recognizer()
 
 def video_frame_callback(frame):
-    global hands_detector
+    global recognizer
     img = frame.to_ndarray(format="bgr24")
-
-    hands, img = hands_detector.findHands(img)
-    # img2 = pose_detector.findPose(img)
-    # lmList, bboxInfo = pose_detector.findPosition(img, bboxWithHands=False)
+    img = recognizer.process_frame(img)
     return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-webrtc_streamer(key="sample", video_frame_callback=video_frame_callback, rtc_configuration={  # Add this config
-        "iceServers": [{"urls": ["stun:iphone-stun.strato-iphone.de:3478"]}]
-    })
+webrtc_streamer(key="sample", video_frame_callback=video_frame_callback)
