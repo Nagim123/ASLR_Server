@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from cvzone.HandTrackingModule import HandDetector
 from cvzone.PoseModule import PoseDetector
-from s_model import SequenceModel
+from s_model import GruModel
 import torch.nn.functional as F
 
 FRAMES_PER_PREDICTION = 30#308
@@ -21,7 +21,7 @@ class Recognizer:
         self._sequence = []
         self._predictions = []
         self._sentence = []
-        self.model = SequenceModel(output_size=len(SIGN_CLASSES))
+        self.model = GruModel(output_size=len(SIGN_CLASSES))
         self.model.load_state_dict(torch.load("model/cool_master.pt"))
         self.model.eval()
         self.current_prediction = "Unknown"
