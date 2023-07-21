@@ -1,9 +1,10 @@
 from streamlit_webrtc import webrtc_streamer
 from sign_detector import Recognizer
 import av
-import threading
+import pyperclip
 import streamlit as st
 import time
+
 
 sentences = ""
 
@@ -23,6 +24,10 @@ st.title("American sign language recognition app! ✌️")
 recognizer = Recognizer()
 container = st.empty()
 
+def on_click_button():
+    pyperclip.copy(sentences)
+
+st.button("Clear and save", on_click=on_click_button)
 def video_frame_callback(frame):
     global recognizer, sentences
     img = frame.to_ndarray(format="bgr24")
@@ -35,6 +40,7 @@ ctx = webrtc_streamer(key="sample", video_frame_callback=video_frame_callback)
 while ctx.state.playing:
     container.text(f"Translated message:{sentences}")
     time.sleep(2)
+    
 # if ctx.:
 #     st.text("Play!")
 # else:
