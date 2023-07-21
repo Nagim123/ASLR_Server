@@ -25,9 +25,10 @@ recognizer = Recognizer()
 container = st.empty()
 
 def on_click_button():
-    pyperclip.copy(sentences)
+    if "sentences" in st.session_state:
+        pyperclip.copy(st.session_state['sentences'])
 
-st.button("Clear and save", on_click=on_click_button)
+st.button("COPY", on_click=on_click_button)
 def video_frame_callback(frame):
     global recognizer, sentences
     img = frame.to_ndarray(format="bgr24")
@@ -39,8 +40,11 @@ ctx = webrtc_streamer(key="sample", video_frame_callback=video_frame_callback)
 
 while ctx.state.playing:
     container.text(f"Translated message:{sentences}")
+    st.session_state["sentences"] = sentences
     time.sleep(2)
-    
+
+if "sentences" in st.session_state:
+    container.text(f"Translated message:{st.session_state['sentences']}")
 # if ctx.:
 #     st.text("Play!")
 # else:
