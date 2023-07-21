@@ -1,20 +1,22 @@
 import torch.nn as nn
 
-class SequenceModel(nn.Module):
-    def __init__(self, input_size=225, output_size=3) -> None:
-        super().__init__()
-        self.lstm = nn.Sequential(
-            nn.LSTM(input_size, 64, 1, batch_first=True),
-        )
-        self.linear = nn.Sequential(
-            nn.Linear(64, 16),
-            nn.ReLU(),
-            nn.Linear(16, output_size),
+class GruModel(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes) -> None:
+        super(GruModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Sequential(
+#             nn.Linear(hidden_size, hidden_size // 2),
+#             nn.ReLU(),
+#             nn.Linear(hidden_size // 2, hidden_size // 4),
+#             nn.ReLU(),
+            nn.Linear(hidden_size, num_classes),
             nn.Softmax(dim=1),
         )
 
     def forward(self, x):
-        x, _ = self.lstm(x)
-        x = self.linear(x[:,-1,:])
-
-        return x
+        out, _ = self.gru(x)
+#         out = self.fc(out[:, -1, :])
+        out = self.fc(torch.mean(out, 1))
+        return out
