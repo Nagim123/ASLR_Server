@@ -22,7 +22,7 @@ class Recognizer:
         self._predictions = []
         self._sentence = []
         self.model = GruModel(177, 128, 2, 9)
-        self.model.load_state_dict(torch.load("model/best_gru_128_2_0927.pt"))
+        self.model.load_state_dict(torch.load("model/best_gru_128_2_0927.pt", map_location=torch.device("cpu")))
         self.model.eval()
         self.current_prediction = "Unknown"
 
@@ -60,17 +60,17 @@ class Recognizer:
         if len(self._sequence) == FRAMES_PER_PREDICTION:
             with torch.no_grad():
                 t_seq = torch.tensor([self._sequence])
-                t_seq = self._pivot_normalization(t_seq.float())
+                t_seq = F.normalize(t_seq.float())
                 prediction = self.model(t_seq)
                 class_id = np.argmax(prediction)
                 if prediction[0][class_id] > PREDICT_THRESHOLD:
                     self._predictions.append(class_id.item())
                     self._predictions = self._predictions[-10:]
-                    if np.all(np.array(self._predictions) == class_id.item()):
-                        self.current_prediction = SIGN_CLASSES[class_id] + "|" + str(prediction[0][class_id])
-                        if len(self._sentence) == 0 or self._sentence[-1] != SIGN_CLASSES[class_id]:
-                            self._sentence.append(SIGN_CLASSES[class_id])
-                            self._sentence = self._sentence[-MAX_SENTENCE_SIZE:]
+                    #if np.all(np.array(self._predictions) == class_id.item()):
+                    self.current_prediction = SIGN_CLASSES[class_id] + "|" + str(prediction[0][class_id])
+                    if len(self._sentence) == 0 or self._sentence[-1] != SIGN_CLASSES[class_id]:
+                        self._sentence.append(SIGN_CLASSES[class_id])
+                        self._sentence = self._sentence[-MAX_SENTENCE_SIZE:]
         img = cv2.putText(frame, self.current_prediction, (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,0),2,cv2.LINE_AA)
         return img
 
@@ -103,7 +103,7 @@ class Recognizer:
             max_y_val = max(y_values)
             max_z_val = max(z_values)
             for i in range(0, len(x_values)):
-                normalized_tensor.append((x_values[i] - x_values[pivot_point_index])/max_x_val)
+                normalized_tensor.append((x_values[i] - x_values[pivot_point_index])/(max_x_val+1))
                 normalized_tensor.append((y_values[i] - y_values[pivot_point_index])/max_y_val)
                 normalized_tensor.append((z_values[i] - z_values[pivot_point_index])/max_z_val)
             normalized_sequence.append(normalized_tensor)
