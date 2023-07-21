@@ -63,10 +63,13 @@ class Recognizer:
                 prediction = self.model(t_seq)
                 class_id = np.argmax(prediction)
                 if prediction[0][class_id] > PREDICT_THRESHOLD:
-                    self.current_prediction = SIGN_CLASSES[class_id] + "|" + str(prediction[0][class_id])
-                    if len(self._sentence) == 0 or self._sentence[-1] != SIGN_CLASSES[class_id]:
-                        self._sentence.append(SIGN_CLASSES[class_id])
-                        self._sentence = self._sentence[-MAX_SENTENCE_SIZE:]
+                    self._predictions.append(class_id.item())
+                    self._predictions = self._predictions[-10:]
+                    if np.all(np.array(self._predictions) == class_id.item()):
+                        self.current_prediction = SIGN_CLASSES[class_id] + "|" + str(prediction[0][class_id])
+                        if len(self._sentence) == 0 or self._sentence[-1] != SIGN_CLASSES[class_id]:
+                            self._sentence.append(SIGN_CLASSES[class_id])
+                            self._sentence = self._sentence[-MAX_SENTENCE_SIZE:]
         img = cv2.putText(frame, self.current_prediction, (3, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,0),2,cv2.LINE_AA)
         return img
 
