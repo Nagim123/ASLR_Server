@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 FRAMES_PER_PREDICTION = 30#308
 PREDICT_THRESHOLD = 0.9
-SIGN_CLASSES = ["GOOD", "HOW", "YOU", "MORNING", "AFTERNOON", "NIGHT"]
+SIGN_CLASSES = ["ATTENTION", "EMPTY", "FOR", "HELLO", "HUMAN", "LIKE", "PROGRAMMING", "THANK YOU", "WE"]
 MAX_SENTENCE_SIZE = 6
 
 # To solve problem with rapidly changing predictions, just collect a lot of predictions and get the class that
@@ -21,8 +21,8 @@ class Recognizer:
         self._sequence = []
         self._predictions = []
         self._sentence = []
-        self.model = GruModel(output_size=len(SIGN_CLASSES))
-        self.model.load_state_dict(torch.load("model/cool_master.pt"))
+        self.model = GruModel(177, 128, 2, 9)
+        self.model.load_state_dict(torch.load("model/best_gru_128_2_0927.pt"))
         self.model.eval()
         self.current_prediction = "Unknown"
 
@@ -33,7 +33,7 @@ class Recognizer:
         return img
     
     def _collect_points(self, frame: np.array):
-        points = [0] * (21 * 3 * 2 + 33 * 3)
+        points = [0] * (21 * 3 * 2 + 17 * 3)
         # Recognize hands and collect them into list of all points
         hands, img1 = self._hands_detector.findHands(frame)
         for i in range(len(hands)):
@@ -48,6 +48,7 @@ class Recognizer:
         # Recognize the pose and collect points
         img2 = self._pose_detector.findPose(frame)
         lmList, bboxInfo = self._pose_detector.findPosition(frame, bboxWithHands=False)
+        lmList = lmList[:17]
         for i in range(len(lmList)):
             for j in range(1, 4):
                 points[21 * 3 * 2 + i * 3 + j - 1] = lmList[i][j]
